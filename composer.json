@@ -1,0 +1,12 @@
+{
+	"name": "cake-blog",
+	"require": {
+		"cakephp/cakephp": "2.7.3"
+	},
+	"config": {
+		"vendor-dir": "Vendor/"
+	},
+	"require-dev": {
+		"cakephp/debug_kit": "^2.2.0"
+	}
+}
