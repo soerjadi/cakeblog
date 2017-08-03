@@ -40,6 +40,7 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 	</div>
 
 	<?php
+		echo $this->Html->script('jquery.min');
 		echo $this->Html->script('bootstrap.min');
 	?>
 </body>

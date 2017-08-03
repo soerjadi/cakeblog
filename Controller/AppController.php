@@ -23,6 +23,34 @@ App::uses('Controller', 'Controller');
  */
 class AppController extends Controller {
     public $components = array(
-        'DebugKit.Toolbar'
+        'DebugKit.Toolbar',
+        'Flash',
+        'Auth' => array(
+            'loginRedirect' => array(
+                'controller' => 'dashboard',
+                'action' => 'index'
+            ),
+            'logoutRedirect' => array(
+                'controller' => 'pages',
+                'action' => 'display',
+                'home'
+            ),
+            'loginAction' => array(
+                'controller' => 'auth',
+                'action' => 'index'
+            ),
+            'authenticate' => array(
+                'Form' => array(
+                    'passwordHasher' => 'Blowfish'
+                )
+            )
+        )
     );
+
+    public $helpers = array('Html', 'Form');
+
+    public function beforeFilter() 
+    {
+        $this->Auth->allow('display');
+    }
 }

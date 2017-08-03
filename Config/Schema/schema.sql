@@ -28,6 +28,6 @@ CREATE TABLE IF NOT EXISTS `article` (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-
 ALTER TABLE "article" ADD CONSTRAINT "fk_article_author_id" FOREIGN KEY("author_id") REFERENCES "users"("id");
+
+INSERT INTO users(id, username, password, name, email, role) VALUES(1, 'admin', '$2a$10$JwPXuj1chl.aBWDOC/HQJOd08RjjTbBK2MI.covg1d1RAxpeTzFsK', 'admin', 'admin@mail.com', 0);

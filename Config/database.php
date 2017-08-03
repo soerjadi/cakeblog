@@ -8,7 +8,7 @@ class DATABASE_CONFIG {
 		'login' => 'surya',
 		'password' => 'past123123',
 		'database' => 'cakeblog',
-		'prefix' => 'cake_t',
+		'prefix' => '',
 		'encoding' => 'utf8'
 	);
 }
