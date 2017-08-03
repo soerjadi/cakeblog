@@ -18,6 +18,12 @@ class UserModel extends AppModel {
                 'rule' => 'notBlank',
                 'message' => 'Password is required'
             )
+        ),
+        'email'    => array(
+            'required' => array(
+                'rule' => 'notBlank',
+                'message' => 'Email is required'
+            )
         )
     );
 

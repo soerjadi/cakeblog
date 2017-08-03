@@ -22,6 +22,8 @@ App::uses('Controller', 'Controller');
  * @link		http://book.cakephp.org/2.0/en/controllers.html#the-app-controller
  */
 class AppController extends Controller {
+    protected $currentUser;
+    
     public $components = array(
         'DebugKit.Toolbar',
         'Flash',
@@ -53,6 +55,7 @@ class AppController extends Controller {
     public function beforeFilter() 
     {
         $this->Auth->allow('display', 'view');
+        $this->currentUser = $this->Auth->user();
     }
 
     public function isAuthorized() 

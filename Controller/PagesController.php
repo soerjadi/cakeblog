@@ -56,6 +56,11 @@ class PagesController extends AppController {
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
 
 		try {
+			$currentUser = $this->Auth->user();
+			$isLoggedIn = isset($currentUser);
+			
+			$this->layout = "blog";
+			$this->set(compact("currentUser", "isLoggedIn"));
 			$this->render(implode('/', $path));
 		} catch (MissingViewException $e) {
 			if (Configure::read('debug')) {

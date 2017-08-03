@@ -26,6 +26,12 @@
 	Router::connect('/register', array('controller' => 'user', 'action' => 'register'));
 
 	Router::connect('/dashboard/users', array('controller' => 'dashboard', 'action' => 'userList'));
+	Router::connect('/dashboard/users/:id/edit', 
+		array('controller' => 'dashboard', 'action' => 'editUser'),
+		array('id' => '[0-9]+'));
+	Router::connect('/dashboard/users/:id/delete',
+		array('controller' => 'dashboard', 'action' => 'deleteUser'),
+		array('id' => '[0-9]+'));
 
 /**
  * Load all plugin routes. See the CakePlugin documentation on
