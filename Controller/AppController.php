@@ -43,7 +43,8 @@ class AppController extends Controller {
                 'Form' => array(
                     'passwordHasher' => 'Blowfish'
                 )
-            )
+            ),
+            'authorize' => array('Controller')
         )
     );
 
@@ -51,6 +52,11 @@ class AppController extends Controller {
 
     public function beforeFilter() 
     {
-        $this->Auth->allow('display');
+        $this->Auth->allow('display', 'view');
+    }
+
+    public function isAuthorized() 
+    {
+        return true;
     }
 }

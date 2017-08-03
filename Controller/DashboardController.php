@@ -10,6 +10,20 @@ class DashboardController extends AppController {
         $this->loadModel("User");
     }
 
+    public function isAuthorized()
+    {
+        $user = $this->Auth->user();
+        switch ($this->action) {
+            case 'userList' :
+                return isset($user['role']) && $user['role'] == 0;
+            case 'index':
+                return isset($user);
+            default:
+                return false;
+                break;
+        }
+    }
+
     public function index()
     {
         // TODO(*): create something cool here.

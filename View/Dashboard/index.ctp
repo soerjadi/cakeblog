@@ -1,1 +1,1 @@
-hello admin
+hello admin <?php echo $this->Html->link('Logout', '/logout') ?>
