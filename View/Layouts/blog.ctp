@@ -32,7 +32,7 @@ $cakeDescription = __d('cake_dev', 'Simple Blog with CakePHP');
         <div class="container">
             <nav class="blog-nav">
                 <?php echo $this->Html->link("Home", 
-                    array("controller" => "pages", "action" => "display", "home", "class" => "blog-nav-item"),
+                    array("controller" => "post", "action" => "home"),
                     array("class" => "blog-nav-item")); ?>
                 <?php if ($isLoggedIn) { 
                     echo $this->Html->link("Dashboard", 
@@ -56,12 +56,21 @@ $cakeDescription = __d('cake_dev', 'Simple Blog with CakePHP');
 			<p class="lead blog-description">Example blog with CakePHP, Templating by Bootstrap.</p>
 		</div>
 		<div class="row">
-			<div class="col-md-12">
-
-				<?php echo $this->Session->flash(); ?>
-
-				<?php echo $this->fetch('content'); ?>
-			</div>
+				<div class="col-md-8 blog-main">
+					<?php echo $this->fetch('content'); ?>
+				</div>
+				<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+					<div class="sidebar-module">
+						<h4>Latest</h4>
+						<ol class="list-unstyled">
+						<?php foreach($newest as $_newPost) :
+							$newPost = $_newPost['ArticleModel'];
+						?>
+							<li><?php echo $this->Html->link($newPost['title'], array('controller' => 'post', 'action' => 'singlePost', 'id' => $newPost['id'])); ?></li>
+						<?php endforeach; ?>
+						</ol>
+					</div>
+				</div>
 		</div>		
 		
 	</div>

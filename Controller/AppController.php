@@ -23,10 +23,12 @@ App::uses('Controller', 'Controller');
  */
 class AppController extends Controller {
     protected $currentUser;
+    protected $isLoggedIn;
     
     public $components = array(
         'DebugKit.Toolbar',
         'Flash',
+        'Session',
         'Auth' => array(
             'loginRedirect' => array(
                 'controller' => 'dashboard',
@@ -50,16 +52,35 @@ class AppController extends Controller {
         )
     );
 
-    public $helpers = array('Html', 'Form');
+    public $helpers = array('Html', 'Form', 'Session');
 
     public function beforeFilter() 
     {
         $this->Auth->allow('display', 'view');
         $this->currentUser = $this->Auth->user();
+        $this->isLoggedIn = isset($this->currentUser);
     }
 
     public function isAuthorized() 
     {
         return true;
+    }
+
+    public function updateLastLogin($id)
+    {
+        $this->loadModel("UserModel");
+        $user = $this->UserModel->findById($id)["UserModel"];
+
+        $now = date("Y-m-d H:i:s");
+        $lastLoginOld = $user["last_login_old"];
+
+        $data = array(
+            "last_login" => $now,
+            "last_login_old" => $lastLoginOld
+        );
+
+        $this->UserModel->read(null, $user['id']);
+        $this->UserModel->set($data);
+        $this->UserModel->save();
     }
 }

@@ -1,3 +1,11 @@
+<div class="clearfix">
+    <?php 
+    echo $this->Html->link("Add User", 
+        array("controller" => "dashboard", "action" => "userAdd", "full_base" => true),
+        array("class" => "btn btn-info"));
+    ?>
+</div>
+
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -11,7 +19,7 @@
         </thead>
         <tbody>
             <?php foreach($users as $key => $user) : 
-                $_user = $user['User'];
+                $_user = $user['UserModel'];
             ?>
             <tr>
                 <td><?php echo $key + 1 ?></td>

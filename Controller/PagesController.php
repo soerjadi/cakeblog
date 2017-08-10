@@ -59,7 +59,7 @@ class PagesController extends AppController {
 			$currentUser = $this->Auth->user();
 			$isLoggedIn = isset($currentUser);
 			
-			$this->layout = "blog";
+			$this->layout = 'blog';
 			$this->set(compact("currentUser", "isLoggedIn"));
 			$this->render(implode('/', $path));
 		} catch (MissingViewException $e) {

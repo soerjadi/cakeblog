@@ -40,7 +40,7 @@ $cakeDescription = __d('cake_dev', 'Dashboard');
                 </button>
                 <?php 
                     echo $this->Html->link("CakeBlog", 
-                        array("controller" => "pages", "action" => "display", "home"),
+                        array("controller" => "post", "action" => "home"),
                         array("class" => "navbar-brand"));
                 ?>
             </div>
@@ -68,12 +68,17 @@ $cakeDescription = __d('cake_dev', 'Dashboard');
                         }
                     ?></li>
                     <li><?php 
-                        echo $this->Html->link('Posts', '');
+                        echo $this->Html->link('Posts', array(
+                            'controller'    => 'post',
+                            'action'        => 'index',
+                            'full_base'     => true
+                        ));
                     ?></li>
                     <li><?php
                         echo $this->Html->link('Logout', array(
                             'controller'    => 'auth',
-                            'action'        => 'logout'
+                            'action'        => 'logout',
+                            'full_base'     => true
                         ));
                     ?></li>
                 </ul>

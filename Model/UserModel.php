@@ -4,33 +4,54 @@ App::uses('AppModel', 'Model');
 App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
 
 class UserModel extends AppModel {
-    public $name = 'users';
+    public $useTable = 'users';
 
     public $validate = array(
         'username'  => array(
-            'required' => array (
-                'rule' => 'notBlank',
-                'message' => 'Username is required'
+            'require' => array(
+                'required' => true,
+                'rule' => array('notBlank', 'isUnique'),
+                'message' => 'Username is required',
+                'allowEmpty' => false
+            ),
+            'between' => array(
+                'rule' => array('lengthBetween', 3, 25),
+                'message' => 'Username min 3 and max 25 characters',
             )
         ),
-        'password' => array(
-            'required' => array(
-                'rule' => 'notBlank',
-                'message' => 'Password is required'
-            )
+        'name' => array(
+            'required' => true,
+            'rule' => array('notBlank'),
+            'message' => 'Please fill the Name',
+            'allowEmpty' => false
         ),
         'email'    => array(
-            'required' => array(
-                'rule' => 'notBlank',
-                'message' => 'Email is required'
+            'required' => true,
+            'rule' => array('notBlank', 'isUnique'),
+            'message' => 'Please fill the Email',
+            'allowEmpty' => false
+        ),
+        'password' => array(
+            'require' => array(
+                'required' => true,
+                'rule' => array('notBlank'),
+                'message' => 'Please fill the Password',
+                'allowEmpty' => false
+            ),
+            'between' => array(
+                'rule' => array('minLength', 12),
+                'message' => 'Password minimum 12 characters',
+            ),
+            'passwordConfirmation' => array(
+                'rule' => array('passwordConfirm'),
+                'message' => 'Password confirmation must be match'
             )
         )
     );
 
     var $hasMany = array(
-        'Article' => array('className' => 'Article')
+        'Article' => array('className' => 'ArticleModel', 'foreignKey' => 'author_id')
     );
-
 
     public function beforeSave($options = array()) {
         if (isset($this->data[$this->alias]['password'])) {
@@ -40,5 +61,10 @@ class UserModel extends AppModel {
             );
         }
         return true;
+    }
+
+    public function passwordConfirm()
+    {
+        return $this->data[$this->alias]['password'] === $this->data[$this->alias]['password_confirmation'];
     }
 }
