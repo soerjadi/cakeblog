@@ -1,0 +1,1112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template>
+    <name>ReusableTokenProvider</name>
+    <description>Centralized OAuth-style token fetch with cache + consumer example.</description>
+    <groupId>a1111111-2222-3333-4444-555555555555</groupId>
+    <timestamp>1764806400000</timestamp>
+    <encoding-version>1.3</encoding-version>
+    <snippet>
+        <processGroups/>
+        <remoteProcessGroups/>
+        <processors>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000001</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>0.0</y>
+                </position>
+                <name>Generate Refresh Heartbeat</name>
+                <type>org.apache.nifi.processors.standard.GenerateFlowFile</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Batch Size</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>Data Format</key>
+                        <value>Text</value>
+                    </entry>
+                    <entry>
+                        <key>Unique FlowFiles</key>
+                        <value>false</value>
+                    </entry>
+                    <entry>
+                        <key>Custom Text</key>
+                        <value>token-refresh-heartbeat</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Timer to periodically revalidate cache entry.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>5 min</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000004</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>220.0</y>
+                </position>
+                <name>Seed Cache Lookup</name>
+                <type>org.apache.nifi.processors.attributes.UpdateAttribute</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-update-attribute-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>cache.key</key>
+                        <value>#{Token.CacheKey}</value>
+                    </entry>
+                    <entry>
+                        <key>auth.request.body</key>
+                        <value><![CDATA[grant_type=client_credentials&amp;client_id=#{Auth.ClientId}&amp;client_secret=#{Auth.ClientSecret}&amp;scope=#{Auth.Scope}]]></value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Ensures subsequent processors know which cache entry to use.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000005</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>430.0</y>
+                </position>
+                <name>Fetch Cached Token</name>
+                <type>org.apache.nifi.processors.standard.FetchDistributedMapCache</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Distributed Cache Service</key>
+                        <value>22222222-0000-0000-0000-000000000001</value>
+                    </entry>
+                    <entry>
+                        <key>Cache Entry Identifier</key>
+                        <value>${cache.key}</value>
+                    </entry>
+                    <entry>
+                        <key>Character Set</key>
+                        <value>UTF-8</value>
+                    </entry>
+                    <entry>
+                        <key>Result Type</key>
+                        <value>json</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Lookup existing token body from DistributedMapCache.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000006</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Parse Cached Token</name>
+                <type>org.apache.nifi.processors.standard.EvaluateJsonPath</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Destination</key>
+                        <value>flowfile-attribute</value>
+                    </entry>
+                    <entry>
+                        <key>Return Type</key>
+                        <value>json</value>
+                    </entry>
+                    <entry>
+                        <key>cache.token</key>
+                        <value>$.token</value>
+                    </entry>
+                    <entry>
+                        <key>cache.expires.epoch</key>
+                        <value>$.expires_epoch</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Extract token and expiry metadata from cache payload.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000007</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>850.0</y>
+                </position>
+                <name>Token TTL Guard</name>
+                <type>org.apache.nifi.processors.route.RouteOnAttribute</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-route-on-attribute-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>token-expired</key>
+                        <value>${now():toNumber():gt(${cache.expires.epoch:toNumber()})}</value>
+                    </entry>
+                    <entry>
+                        <key>token-valid</key>
+                        <value>${now():toNumber():lt(${cache.expires.epoch:toNumber()})}</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Detects stale/missing tokens and only refreshes when needed.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships>
+                        <relationship>token-valid</relationship>
+                        <relationship>unmatched</relationship>
+                    </autoTerminatedRelationships>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000008</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>400.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Build Auth Request Body</name>
+                <type>org.apache.nifi.processors.standard.ReplaceText</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Evaluation Mode</key>
+                        <value>Entire text</value>
+                    </entry>
+                    <entry>
+                        <key>Replacement Strategy</key>
+                        <value>Always Replace</value>
+                    </entry>
+                    <entry>
+                        <key>Replacement Value</key>
+                        <value>${auth.request.body}</value>
+                    </entry>
+                    <entry>
+                        <key>Character Set</key>
+                        <value>UTF-8</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Swaps payload for POST body expected by InvokeHTTP.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-000000000009</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>640.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Request Token</name>
+                <type>org.apache.nifi.processors.standard.InvokeHTTP</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Remote URL</key>
+                        <value>#{Auth.TokenUrl}</value>
+                    </entry>
+                    <entry>
+                        <key>HTTP Method</key>
+                        <value>POST</value>
+                    </entry>
+                    <entry>
+                        <key>Content-Type</key>
+                        <value>application/x-www-form-urlencoded</value>
+                    </entry>
+                    <entry>
+                        <key>Send Message Body</key>
+                        <value>true</value>
+                    </entry>
+                    <entry>
+                        <key>Read Timeout</key>
+                        <value>30 sec</value>
+                    </entry>
+                    <entry>
+                        <key>Follow Redirects</key>
+                        <value>true</value>
+                    </entry>
+                    <entry>
+                        <key>Put Response Body In Attribute</key>
+                        <value>invokehttp.response.body</value>
+                    </entry>
+                    <entry>
+                        <key>SSL Context Service</key>
+                        <value></value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Calls third-party OAuth endpoint for fresh bearer token.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000a</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>880.0</x>
+                    <y>480.0</y>
+                </position>
+                <name>Token Request Failures</name>
+                <type>org.apache.nifi.processors.standard.LogAttribute</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Log Level</key>
+                        <value>error</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Surfaced failures/retries for operator awareness.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships>
+                        <relationship>success</relationship>
+                    </autoTerminatedRelationships>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000b</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>880.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Parse Token Response</name>
+                <type>org.apache.nifi.processors.standard.EvaluateJsonPath</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Destination</key>
+                        <value>flowfile-attribute</value>
+                    </entry>
+                    <entry>
+                        <key>Return Type</key>
+                        <value>json</value>
+                    </entry>
+                    <entry>
+                        <key>auth.access.token</key>
+                        <value>$.access_token</value>
+                    </entry>
+                    <entry>
+                        <key>auth.expires.in</key>
+                        <value>$.expires_in</value>
+                    </entry>
+                    <entry>
+                        <key>auth.scope</key>
+                        <value>$.scope</value>
+                    </entry>
+                    <entry>
+                        <key>auth.token.type</key>
+                        <value>$.token_type</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Normalizes OAuth response into attributes.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000c</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>1120.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Compute Expiration Metadata</name>
+                <type>org.apache.nifi.processors.attributes.UpdateAttribute</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-update-attribute-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>cache.key</key>
+                        <value>#{Token.CacheKey}</value>
+                    </entry>
+                    <entry>
+                        <key>cache.expires.epoch</key>
+                        <value>${now():toNumber():plus(${auth.expires.in:toNumber():multiply(1000)})}</value>
+                    </entry>
+                    <entry>
+                        <key>cache.token</key>
+                        <value>${auth.access.token}</value>
+                    </entry>
+                    <entry>
+                        <key>cache.token.type</key>
+                        <value>${auth.token.type:orElse('Bearer')}</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Computes future epoch timestamp for refresh logic.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000d</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>1360.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Build Cache Payload</name>
+                <type>org.apache.nifi.processors.standard.ReplaceText</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Evaluation Mode</key>
+                        <value>Entire text</value>
+                    </entry>
+                    <entry>
+                        <key>Replacement Strategy</key>
+                        <value>Always Replace</value>
+                    </entry>
+                    <entry>
+                        <key>Replacement Value</key>
+                        <value><![CDATA[{"token":"${cache.token}","token_type":"${cache.token.type}","expires_epoch":"${cache.expires.epoch}","scope":"${auth.scope}"}]]></value>
+                    </entry>
+                    <entry>
+                        <key>Character Set</key>
+                        <value>UTF-8</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Materializes normalized JSON doc for cache storage.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000e</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>1600.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Write Token To Cache</name>
+                <type>org.apache.nifi.processors.standard.PutDistributedMapCache</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Distributed Cache Service</key>
+                        <value>22222222-0000-0000-0000-000000000001</value>
+                    </entry>
+                    <entry>
+                        <key>Cache Entry Identifier</key>
+                        <value>${cache.key}</value>
+                    </entry>
+                    <entry>
+                        <key>Character Set</key>
+                        <value>UTF-8</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Persists the computed token payload for downstream reuse.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships/>
+                </config>
+            </processor>
+            <processor>
+                <id>11111111-0000-0000-0000-00000000000f</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>1840.0</x>
+                    <y>640.0</y>
+                </position>
+                <name>Token Ready Bulletin</name>
+                <type>org.apache.nifi.processors.standard.LogAttribute</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Log Level</key>
+                        <value>info</value>
+                    </entry>
+                </properties>
+                <config>
+                    <bulletinLevel>WARN</bulletinLevel>
+                    <comments>Single place to emit success + valid cache hits.</comments>
+                    <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <executionNode>ALL</executionNode>
+                    <penalizationPeriod>30 sec</penalizationPeriod>
+                    <yieldDuration>1 sec</yieldDuration>
+                    <runDurationMillis>0</runDurationMillis>
+                    <lossTolerant>false</lossTolerant>
+                    <annotationData/>
+                    <autoTerminatedRelationships>
+                        <relationship>success</relationship>
+                    </autoTerminatedRelationships>
+                </config>
+            </processor>
+        </processors>
+        <inputPorts>
+            <port>
+                <id>11111111-0000-0000-0000-000000000002</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>-240.0</x>
+                    <y>0.0</y>
+                </position>
+                <name>Manual Refresh Input</name>
+                <comments>Allows other PGs to trigger a refresh via Site-to-Site.</comments>
+                <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+                <scheduledState>STOPPED</scheduledState>
+                <allowRemoteAccess>true</allowRemoteAccess>
+            </port>
+        </inputPorts>
+        <outputPorts/>
+        <funnels>
+            <funnel>
+                <id>11111111-0000-0000-0000-000000000003</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>-120.0</x>
+                    <y>120.0</y>
+                </position>
+            </funnel>
+        </funnels>
+        <labels>
+            <label>
+                <id>aaaaaaaa-0000-0000-0000-000000000001</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <position>
+                    <x>0.0</x>
+                    <y>-160.0</y>
+                </position>
+                <value>Attach a Parameter Context with Auth.* + Token.* keys before enabling.</value>
+            </label>
+        </labels>
+        <connections>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000001</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>HB to Funnel</name>
+                <sourceId>11111111-0000-0000-0000-000000000001</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000003</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>FUNNEL</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000002</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Input to Funnel</name>
+                <sourceId>11111111-0000-0000-0000-000000000002</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>INPUT_PORT</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000003</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>FUNNEL</destinationType>
+                <relationships/>
+                <selectedRelationships/>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000003</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Funnel to Seed</name>
+                <sourceId>11111111-0000-0000-0000-000000000003</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>FUNNEL</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000004</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships/>
+                <selectedRelationships/>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000004</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Seed to Fetch</name>
+                <sourceId>11111111-0000-0000-0000-000000000004</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000005</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000005</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Fetch success</name>
+                <sourceId>11111111-0000-0000-0000-000000000005</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000006</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000006</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Cache parse to TTL</name>
+                <sourceId>11111111-0000-0000-0000-000000000006</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000007</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000007</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>TTL expired</name>
+                <sourceId>11111111-0000-0000-0000-000000000007</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000008</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>token-expired</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>token-expired</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000008</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Fetch not found</name>
+                <sourceId>11111111-0000-0000-0000-000000000005</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000008</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>not-found</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>not-found</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000009</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Body to HTTP</name>
+                <sourceId>11111111-0000-0000-0000-000000000008</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-000000000009</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000a</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Invoke response</name>
+                <sourceId>11111111-0000-0000-0000-000000000009</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000b</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>response</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>response</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000b</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Invoke errors</name>
+                <sourceId>11111111-0000-0000-0000-000000000009</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000a</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>failure</relationship>
+                    <relationship>retry</relationship>
+                    <relationship>no retry</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>failure</selectedRelationship>
+                    <selectedRelationship>retry</selectedRelationship>
+                    <selectedRelationship>no retry</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000c</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Parse to compute</name>
+                <sourceId>11111111-0000-0000-0000-00000000000b</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000c</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000d</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Compute to payload</name>
+                <sourceId>11111111-0000-0000-0000-00000000000c</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000d</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000e</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Payload to cache</name>
+                <sourceId>11111111-0000-0000-0000-00000000000d</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000e</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-00000000000f</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Cache success to log</name>
+                <sourceId>11111111-0000-0000-0000-00000000000e</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000f</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>success</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>success</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000010</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Cache failure to log</name>
+                <sourceId>11111111-0000-0000-0000-00000000000e</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000a</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>failure</relationship>
+                    <relationship>retry</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>failure</selectedRelationship>
+                    <selectedRelationship>retry</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+            <connection>
+                <id>33333333-0000-0000-0000-000000000011</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+                <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+                <flowFileExpiration>0 sec</flowFileExpiration>
+                <labelIndex>1</labelIndex>
+                <name>Token-valid to log</name>
+                <sourceId>11111111-0000-0000-0000-000000000007</sourceId>
+                <sourceGroupId>a1111111-2222-3333-4444-555555555555</sourceGroupId>
+                <sourceType>PROCESSOR</sourceType>
+                <destinationId>11111111-0000-0000-0000-00000000000f</destinationId>
+                <destinationGroupId>a1111111-2222-3333-4444-555555555555</destinationGroupId>
+                <destinationType>PROCESSOR</destinationType>
+                <relationships>
+                    <relationship>token-valid</relationship>
+                </relationships>
+                <selectedRelationships>
+                    <selectedRelationship>token-valid</selectedRelationship>
+                </selectedRelationships>
+                <bends/>
+                <loadBalanceStrategy>DO_NOT_LOAD_BALANCE</loadBalanceStrategy>
+                <partitioningAttribute/>
+                <loadBalanceCompression>DO_NOT_COMPRESS</loadBalanceCompression>
+            </connection>
+        </connections>
+        <controllerServices>
+            <controllerService>
+                <id>22222222-0000-0000-0000-000000000001</id>
+                <parentGroupId>a1111111-2222-3333-4444-555555555555</parentGroupId>
+                <name>TokenCacheClientService</name>
+                <type>org.apache.nifi.distributed.cache.client.DistributedMapCacheClientService</type>
+                <bundle>
+                    <group>org.apache.nifi</group>
+                    <artifact>nifi-standard-nar</artifact>
+                    <version>1.23.0</version>
+                </bundle>
+                <properties>
+                    <entry>
+                        <key>Distributed Cache Server Hostname</key>
+                        <value>#{Token.CacheHost}</value>
+                    </entry>
+                    <entry>
+                        <key>Distributed Cache Server Port</key>
+                        <value>#{Token.CachePort}</value>
+                    </entry>
+                    <entry>
+                        <key>Communication Timeout</key>
+                        <value>30 sec</value>
+                    </entry>
+                    <entry>
+                        <key>Key Serializer</key>
+                        <value>org.apache.nifi.distributed.cache.client.serializer.StringSerializer</value>
+                    </entry>
+                    <entry>
+                        <key>Value Serializer</key>
+                        <value>org.apache.nifi.distributed.cache.client.serializer.StringSerializer</value>
+                    </entry>
+                </properties>
+                <comments>Shared DMCC client; point at an external DistributedMapCacheServer or existing cluster service.</comments>
+                <state>DISABLED</state>
+            </controllerService>
+        </controllerServices>
+    </snippet>
+</template>
